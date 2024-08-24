@@ -26,6 +26,6 @@ public class UserService {
                 .build();
 
         userRepository.saveUser(user);
-        return null;
+        return ApiResponse.builder().build();
     }
 }

@@ -1,4 +1,15 @@
 package org.example.practice.common.domain;
 
-public record ApiResponse<T>(String HttpStatus, String message, T data) {
+import lombok.Builder;
+import org.springframework.http.HttpStatus;
+
+
+public record ApiResponse<T>(HttpStatus httpStatus, String message, T data) {
+
+    @Builder
+    public ApiResponse {
+        httpStatus = HttpStatus.OK;
+        message = HttpStatus.OK.getReasonPhrase();
+        data = null;
+    }
 }
