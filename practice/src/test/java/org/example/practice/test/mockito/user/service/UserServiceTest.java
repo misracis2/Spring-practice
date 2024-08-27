@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
@@ -40,5 +42,35 @@ class UserServiceTest {
         ApiResponse<?> response = userService.signUp(userSignUpRequest);
         Assertions.assertThat(response.httpStatus()).isEqualTo(HttpStatus.OK);
         Assertions.assertThat(response.message()).isEqualTo("OK");
+    }
+
+    @DisplayName("회원가입 실패 케이스 - WLF")
+    @Test
+    public void failWlf() {
+        //given
+        UserSignUpRequest userSignUpRequest = new UserSignUpRequest("id", "password", "name");
+
+        //when
+        doThrow(new RuntimeException("user name is in WLF")).when(validateUserService).validateUserName(userSignUpRequest.name());
+
+        //then
+        Assertions.assertThatThrownBy(() -> userService.signUp(userSignUpRequest))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("user name is in WLF");
+    }
+
+    @DisplayName("회원가입 실패 케이스 - 중복 ID")
+    @Test
+    public void failByDuplicationId() {
+        //given
+        UserSignUpRequest userSignUpRequest = new UserSignUpRequest("duplicatedId", "password", "name");
+
+        //when
+        doThrow(new RuntimeException("user already exists")).when(userRepository).saveUser(any(User.class));
+
+        //then
+        Assertions.assertThatThrownBy(() -> userService.signUp(userSignUpRequest))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("user already exists");
     }
 }
